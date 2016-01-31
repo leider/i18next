@@ -1,3 +1,42 @@
+### 2.0.23
+- fixes returnObjects in case of multiple namespaces
+
+### 2.0.22
+- add options for context, pluralSeparator
+
+### 2.0.21
+- clear done load request in backendConnector
+
+### 2.0.20
+- pass full options to detectors as third arg
+
+### 2.0.19
+- do not callback err in backendConnector if no backend is specified
+
+### 2.0.18
+- check for fallbackLng exist
+
+### 2.0.17
+- adds cimode to options.whitelist if set
+- emits failedLoading on load error
+
+### 2.0.16
+- adds addResource to i18next API
+- fix init of i18next without options, callback
+
+### 2.0.15
+- avoid loading of resources for lng=cimode
+
+### 2.0.14
+- enhance callback on load from backend...wait for pendings
+
+### 2.0.10
+- fixing build chain
+- do not post process on nested translation resolve
+
+### 2.0.5
+- fixing allow nesting on interpolated nesting vars
+
 ### 2.0.4
 - don't log lng changed if no lng was detected
 - extend result on arrayJoins

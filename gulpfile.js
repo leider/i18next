@@ -32,7 +32,7 @@ function compile(watch) {
   }
 
   function rebundle() {
-    bundler.bundle()
+    return bundler.bundle()
       .on('error', function(err) { console.error(err); this.emit('end'); })
       .pipe(source(output))
       .pipe(buffer())
@@ -49,7 +49,7 @@ function compile(watch) {
     });
   }
 
-  rebundle();
+  return rebundle();
 }
 
 gulp.task('eslint', function () {
@@ -66,6 +66,21 @@ gulp.task('test', function (done) {
     configFile: __dirname + '/karma.conf.js',
     singleRun: true,
     reporters: [ 'spec', 'coverage' ],
+  }, done).start();
+});
+
+gulp.task('test_forCI', function (done) {
+  new Server({
+    configFile: __dirname + '/karma.conf.js',
+    singleRun: true,
+    reporters: [ 'coverage', 'coveralls', 'spec' ],
+  }, done).start();
+});
+
+gulp.task('test_compat_ci', function (done) {
+  new Server({
+    configFile: __dirname + '/karma.backward.conf.js',
+    singleRun: true
   }, done).start();
 });
 
@@ -88,7 +103,7 @@ gulp.task('babel', function () {
     .pipe(gulp.dest('./lib'));
 });
 
-gulp.task('rename', function () {
+gulp.task('rename', ['concat', 'babel'], function () {
   return gulp
     .src('./bin/index.js')
     .pipe(rename('./' + standaloneName + '.min.js'))
@@ -148,7 +163,7 @@ function inc(version) {
         default: false
     }))
     .pipe(cb(function() {
-      git.push('origin','master', {args: ' --tags'}, function (err) {
+      git.push('origin','master', {args: ' --tags  --force'}, function (err) {
         if (err) throw err;
       });
     }))
@@ -174,3 +189,5 @@ gulp.task('bump', function() { return inc(argv.v); });
 gulp.task('default', ['watch']);
 gulp.task('build', ['concat', 'babel', 'rename']);
 gulp.task('publish', ['bump']);
+
+gulp.task('test_ci', ['test_forCI']);

@@ -13,6 +13,8 @@ export function get() {
 
     keySeparator: '.',
     nsSeparator: ':',
+    pluralSeparator: '_',
+    contextSeparator: '_',
 
     saveMissing: false, // enable to send missing values
     saveMissingTo: 'fallback', // 'current' || 'all'
@@ -53,6 +55,9 @@ export function transformOptions(options) {
   if (typeof options.ns === 'string') options.ns = [options.ns];
   if (typeof options.fallbackLng === 'string') options.fallbackLng = [options.fallbackLng];
   if (typeof options.fallbackNS === 'string') options.fallbackNS = [options.fallbackNS];
+
+  // extend whitelist with cimode
+  if (options.whitelist && options.whitelist.indexOf('cimode') < 0) options.whitelist.push('cimode');
 
   return options;
 }

@@ -83,7 +83,7 @@ class Translator extends EventEmitter {
       let copy = (resType === '[object Array]') ? [] : {}; // apply child translation on a copy
 
       for (let m in res) {
-        copy[m] = this.translate(`${key}${keySeparator}${m}`, {...{joinArrays: false}, ...options});
+        copy[m] = this.translate(`${key}${keySeparator}${m}`, {...{joinArrays: false, ns: namespaces}, ...options});
       }
       res = copy;
     }
@@ -113,7 +113,7 @@ class Translator extends EventEmitter {
 
         if (this.options.saveMissing) {
           var lngs = [];
-          if (this.options.saveMissingTo === 'fallback' && this.options.fallbackLng[0]) {
+          if (this.options.saveMissingTo === 'fallback' && this.options.fallbackLng && this.options.fallbackLng[0]) {
             for (let i = 0; i < this.options.fallbackLng.length; i++) {
               lngs.push(this.options.fallbackLng[i]);
             }
@@ -149,20 +149,22 @@ class Translator extends EventEmitter {
 
   extendTranslation(res, key, options) {
     if (options.interpolation) this.interpolator.init(options);
-    // nesting
-    res = this.interpolator.nest(res, (...args) => { return this.translate.apply(this, args); }, options);
 
     // interpolate
     let data = options.replace && typeof options.replace !== 'string' ? options.replace : options;
     if (this.options.interpolation.defaultVariables) data = {...this.options.interpolation.defaultVariables, ...data};
     res = this.interpolator.interpolate(res, data);
+
+    // nesting
+    res = this.interpolator.nest(res, (...args) => { return this.translate.apply(this, args); }, options);
+
     if (options.interpolation) this.interpolator.reset();
 
     // post process
     let postProcess = options.postProcess || this.options.postProcess;
     let postProcessorNames = typeof postProcess === 'string' ? [postProcess] : postProcess;
 
-    if (res !== undefined && postProcessorNames && postProcessorNames.length) res = postProcessor.handle(postProcessorNames, res, key, options, this);
+    if (res !== undefined && postProcessorNames && postProcessorNames.length && options.applyPostProcessor !== false) res = postProcessor.handle(postProcessorNames, res, key, options, this);
 
     return res;
   }
@@ -194,7 +196,7 @@ class Translator extends EventEmitter {
           let finalKeys = [finalKey];
 
           // get key for context if needed
-          if (needsContextHandling) finalKeys.push(finalKey += `_${options.context}`);
+          if (needsContextHandling) finalKeys.push(finalKey += `${this.options.contextSeparator}${options.context}`);
 
           // get key for plural if needed
           if (needsPluralHandling) finalKeys.push(finalKey += this.pluralResolver.getSuffix(code, options.count));

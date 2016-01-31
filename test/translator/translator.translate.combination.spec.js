@@ -6,25 +6,16 @@ import Interpolator from '../../src/Interpolator';
 
 describe('Translator', () => {
 
-  describe('translate() with returnObjects=true', () => {
+  describe('translate() with combined functionality', () => {
     var t;
 
     before(() => {
       const rs = new ResourceStore({
         en: {
-          common: {
-            test: ['common_test_en_1', 'common_test_en_2']
-          },
-          special: {
-            test: ['special_test_en_1', 'special_test_en_2']
-          }
-        },
-        de: {
-          common: {
-            test: ['common_test_de_1', 'common_test_de_2']
-          },
-          special: {
-            test: ['special_test_de_1', 'special_test_de_2']
+          translation: {
+            'key1': 'hello world',
+            'key2': 'It is: $t(key1)',
+            'key3': 'It is: {{val}}'
           }
         }
       });
@@ -35,21 +26,17 @@ describe('Translator', () => {
         pluralResolver: new PluralResolver(lu, {prepend: '_'}),
         interpolator: new Interpolator()
       }, {
-        returnObjects: true,
-        ns: ['common', 'special'],
-        defaultNS: 'common',
-        interpolation: {
-          interpolateResult: true,
-          interpolateDefaultValue: true,
-          interpolateKey: true
-        }
+        ns: 'translation',
+        defaultNS: 'translation',
+        interpolation: {}
       });
       t.changeLanguage('en');
     });
 
     var tests = [
-      {args: ['common:test'], expected: [ 'common_test_en_1', 'common_test_en_2' ]},
-      {args: ['special:test'], expected: [ 'special_test_en_1', 'special_test_en_2' ]}
+      // interpolation and nesting in var
+      { args: ['key2'], expected: 'It is: hello world' },
+      { args: ['key3', { val: '$t(key1)' }], expected: 'It is: hello world' }
     ];
 
     tests.forEach((test) => {
